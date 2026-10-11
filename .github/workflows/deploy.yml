@@ -27,7 +27,7 @@ jobs:
           NAME="GDG-frontend"
           TARGET_DIR=~/$NAME
           BRANCH=main
-          REPO_URL="https://github.com/Google-Developer-Group-Qassim-Unversity/score-leaderboard-app.git"
+          REPO_URL="https://github.com/Google-Developer-Group-Qassim-Unversity/Website.git"
 
           INFISICAL_ENV="prod"
           INFISICAL_ENV_PATH="/main-frontend"
