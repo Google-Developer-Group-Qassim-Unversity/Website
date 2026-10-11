@@ -2,7 +2,7 @@ const fs = require('fs');
 const path = require('path');
 const sharp = require('sharp');
 
-const BACKEND_PASS_DIR = path.join(__dirname, '..', 'score-leaderboard-Admin-app', 'Backend', 'app', 'assets', 'gdg.pass');
+const BACKEND_PASS_DIR = path.join(__dirname, '..', 'Backend', 'app', 'assets', 'gdg.pass');
 const FRONTEND_PASS_DIR = path.join(__dirname, 'passmodels', 'gdg.pass');
 
 fs.mkdirSync(BACKEND_PASS_DIR, { recursive: true });
