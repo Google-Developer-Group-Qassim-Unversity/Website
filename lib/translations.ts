@@ -305,6 +305,9 @@ export const resources = {
       "eventDetail.joinMeeting": "Join Meeting",
       "eventDetail.meetingLink": "Meeting Link",
       "eventDetail.addToCalendar": "Add to Google Calendar",
+      "eventDetail.content": "Event content",
+      "eventDetail.content.slides": "Slides & files",
+      "eventDetail.content.recordings": "Recordings",
 
       // Member Detail Page
       "memberDetail.backToMembers": "Back to Members",
@@ -1043,6 +1046,9 @@ export const resources = {
       "eventDetail.joinMeeting": "ادخل الاجتماع",
       "eventDetail.meetingLink": "رابط الاجتماع",
       "eventDetail.addToCalendar": "أضفها للتقويم",
+      "eventDetail.content": "محتوى الفعالية",
+      "eventDetail.content.slides": "ملفات وعروض",
+      "eventDetail.content.recordings": "التسجيلات",
 
       // Member Detail Page
       "memberDetail.backToMembers": "العودة للأعضاء",
