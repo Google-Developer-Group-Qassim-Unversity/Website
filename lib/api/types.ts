@@ -165,6 +165,7 @@ export type ApiOpenEventsResponse = ApiOpenEventItem[]
 // A link to event content (slides, recordings) an admin pasted in. The label
 // is the display name members see - never the Drive/YouTube filename behind it.
 export interface ApiEventContentLink {
+  id: string
   label: string
   url: string
   kind: 'slides' | 'recording' | 'other'

@@ -329,11 +329,7 @@ export async function EventDetailContent({ id, lang }: { id: string; lang: Langu
               <EventSignupButton event={openEvent} className="w-full" />
             )}
             {contentLinks.length > 0 && (
-              <EventContentDialog
-                links={contentLinks}
-                lang={lang}
-                className="w-full max-sm:justify-center"
-              />
+              <EventContentDialog links={contentLinks} lang={lang} className="w-full" />
             )}
 
           {/* Description Section */}
