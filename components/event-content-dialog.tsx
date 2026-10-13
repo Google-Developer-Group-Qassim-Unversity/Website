@@ -1,6 +1,6 @@
 'use client'
 
-import { FolderUp, Link as LinkIcon, Presentation, Video } from 'lucide-react'
+import { Download, FolderUp, Link as LinkIcon, Presentation, Video } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
 import {
@@ -36,24 +36,45 @@ interface EventContentDialogProps {
   className?: string;
 }
 
-function Section({ title, links }: { title: string; links: ApiEventContentLink[] }) {
+function Section({ title, links, lang }: { title: string; links: ApiEventContentLink[]; lang: Language }) {
+  const t = (key: string) => getTranslation(lang, key)
   return (
     <section className="space-y-2">
       <h3 className="text-sm font-medium text-muted-foreground">{title}</h3>
       <div className="grid min-w-0 gap-1.5">
         {links.map((link) => (
-          <Button key={link.id} variant="outline" size="sm" asChild>
-            <a
-              href={link.url}
-              target="_blank"
-              rel="noopener noreferrer nofollow"
-              className="min-w-0 justify-start gap-2 font-normal"
-              dir="auto"
-            >
-              <ItemIcon kind={link.kind} />
-              <span className="truncate">{link.label}</span>
-            </a>
-          </Button>
+          // One row, one label button - the label opens the link. A row whose
+          // URL is a recognizable Drive file gains a second action beside the
+          // label: the server-derived direct download, no viewer detour.
+          // Recordings are excluded too (and the server never derives one for
+          // them): nobody downloads an unseen video before playing it.
+          <div key={link.id} className="flex min-w-0 gap-1.5">
+            <Button variant="outline" size="sm" asChild className="min-w-0 flex-1">
+              <a
+                href={link.url}
+                target="_blank"
+                rel="noopener noreferrer nofollow"
+                className="min-w-0 justify-start gap-2 font-normal"
+                dir="auto"
+              >
+                <ItemIcon kind={link.kind} />
+                <span className="truncate">{link.label}</span>
+              </a>
+            </Button>
+            {link.download_url && link.kind !== 'recording' && (
+              <Button variant="outline" size="icon" asChild>
+                <a
+                  href={link.download_url}
+                  target="_blank"
+                  rel="noopener noreferrer nofollow"
+                  aria-label={t('eventDetail.content.download')}
+                  title={t('eventDetail.content.download')}
+                >
+                  <Download className="h-4 w-4" />
+                </a>
+              </Button>
+            )}
+          </div>
         ))}
       </div>
     </section>
@@ -96,11 +117,11 @@ export function EventContentDialog({ links, lang, className }: EventContentDialo
         </DialogHeader>
 
         {slides.length > 0 && (
-          <Section title={t('eventDetail.content.slides')} links={slides} />
+          <Section title={t('eventDetail.content.slides')} links={slides} lang={lang} />
         )}
 
         {recordings.length > 0 && (
-          <Section title={t('eventDetail.content.recordings')} links={recordings} />
+          <Section title={t('eventDetail.content.recordings')} links={recordings} lang={lang} />
         )}
       </DialogContent>
     </Dialog>

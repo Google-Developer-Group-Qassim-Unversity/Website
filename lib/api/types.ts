@@ -170,6 +170,9 @@ export interface ApiEventContentLink {
   url: string
   kind: 'slides' | 'recording' | 'other'
   published: boolean
+  /** Direct-download URL for Drive-hosted files, derived server-side. Null (or
+   * absent) keeps the row Open-only - never a broken Download action. */
+  download_url?: string | null
 }
 
 // ===== Submission Types =====

@@ -308,6 +308,7 @@ export const resources = {
       "eventDetail.content": "Event content",
       "eventDetail.content.slides": "Slides & files",
       "eventDetail.content.recordings": "Recordings",
+      "eventDetail.content.download": "Download",
 
       // Member Detail Page
       "memberDetail.backToMembers": "Back to Members",
@@ -1049,6 +1050,7 @@ export const resources = {
       "eventDetail.content": "محتوى الفعالية",
       "eventDetail.content.slides": "ملفات وعروض",
       "eventDetail.content.recordings": "التسجيلات",
+      "eventDetail.content.download": "تنزيل",
 
       // Member Detail Page
       "memberDetail.backToMembers": "العودة للأعضاء",
