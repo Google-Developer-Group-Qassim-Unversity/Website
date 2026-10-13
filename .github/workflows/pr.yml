@@ -1,0 +1,44 @@
+name: PR Checks
+
+# Every change reaches main through dev (CLAUDE.md), so the checks run on PRs
+# into dev. A dev -> main PR carries only what already passed here.
+
+on:
+  pull_request:
+    branches: [dev]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pr-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  # There is no lint job: the repo has no ESLint config yet (`next lint` asks
+  # to create one). The build is the real check, since next.config.mjs tells
+  # it to ignore type errors.
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.23.0
+      - uses: actions/setup-node@v4
+        with:
+          # 24 runs the .mjs tests' TypeScript imports natively.
+          node-version: "24"
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm run typecheck
+      - run: pnpm test
+      - name: Build
+        # Placeholders: the build only needs the public values to exist.
+        env:
+          NEXT_TELEMETRY_DISABLED: "1"
+          NEXT_PUBLIC_BACKEND_API_URL: http://127.0.0.1:9
+          NEXT_PUBLIC_THIS_APP_URL: http://localhost:3000
+          NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: pk_test_Y2xlcmsuZXhhbXBsZS5jb20k
+          CLERK_SECRET_KEY: sk_test_placeholder
+        run: pnpm exec next build
