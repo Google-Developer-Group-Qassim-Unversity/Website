@@ -149,6 +149,8 @@ export interface ApiEventItem {
   /** Join link for remote events, set by an admin. Null when there is none. */
   meeting_url: string | null
   created_at: string | null
+  /** Published content links, attached server-side. Unpublished rows never arrive. */
+  content_links?: ApiEventContentLink[]
 }
 
 export interface ApiOpenEventItem extends ApiEventItem {
@@ -159,6 +161,19 @@ export interface ApiOpenEventItem extends ApiEventItem {
 
 export type ApiEventsResponse = ApiEventItem[]
 export type ApiOpenEventsResponse = ApiOpenEventItem[]
+
+// A link to event content (slides, recordings) an admin pasted in. The label
+// is the display name members see - never the Drive/YouTube filename behind it.
+export interface ApiEventContentLink {
+  id: string
+  label: string
+  url: string
+  kind: 'slides' | 'recording' | 'other'
+  published: boolean
+  /** Direct-download URL for Drive-hosted files, derived server-side. Null (or
+   * absent) keeps the row Open-only - never a broken Download action. */
+  download_url?: string | null
+}
 
 // ===== Submission Types =====
 
