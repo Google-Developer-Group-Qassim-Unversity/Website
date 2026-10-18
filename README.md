@@ -20,3 +20,9 @@ deploys production. See [CLAUDE.md](CLAUDE.md). Secrets come from Infisical at
 pnpm install
 pnpm run dev
 ```
+
+## Pull request notifications
+
+New pull requests targeting `dev` are announced in Discord when the
+`DISCORD_WEBHOOK_URL` Actions secret is configured. Each message includes the
+author, PR title and number, repository, and a direct link for review.
