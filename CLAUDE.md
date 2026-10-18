@@ -1,40 +1,24 @@
 # Website
 
-GDG Qassim's public site (`gdg-q.com`): the leaderboard, events, member
-profiles and wallet passes. Next.js with Clerk auth; every piece of data comes
-from the `Backend` API.
+The public site for GDG Qassim (`gdg-q.com`). It is one of three repos
+(`Backend`, `Admin`, `Website`); `Backend/CLAUDE.md` describes how they fit
+together.
 
-## Three repositories
+## Linear: use `linear-gdg`, never `linear`
 
-| Repo | What | Deployed at |
-|------|------|-------------|
-| [`Backend`](https://github.com/Google-Developer-Group-Qassim-Unversity/Backend) | FastAPI + MySQL; the one API every frontend calls | `refactor.albrrak773.com`, staging `api-dev.gdg-q.com` |
-| [`Admin`](https://github.com/Google-Developer-Group-Qassim-Unversity/Admin) | Next.js admin panel | `admin.gdg-q.com`, staging `admin-dev.gdg-q.com` |
-| `Website` | This repo | `gdg-q.com`, staging `dev.gdg-q.com` |
+This project's tickets live in the GDG Linear workspace, reached through an MCP
+server named `linear-gdg` (`https://mcp.linear.app/mcp`). It is declared in this
+repo for every agent we use:
 
-They are meant to be cloned side by side; `Backend/...` means that file in the
-sibling repo. A change that spans repos uses the same branch name in each, and
-the backend merges first.
+| Agent | File | Sign in once with |
+|-------|------|-------------------|
+| Claude Code | `.mcp.json` | `/mcp` |
+| Codex | `.codex/config.toml` (project must be trusted) | `codex mcp login linear-gdg` |
+| opencode | `opencode.json` | `opencode mcp auth linear-gdg` |
+| Cursor | `.cursor/mcp.json` | Settings → MCP |
+| VS Code (Copilot) | `.vscode/mcp.json` | the server's "Start" prompt |
+| Gemini CLI | `.gemini/settings.json` | `/mcp auth linear-gdg` |
 
-## Branches: everything goes through `dev`
-
-**Never push to `main`, and never open a PR into `main`.** Branch from `dev`,
-open the PR into `dev`. A merge to `dev` deploys staging (`dev.gdg-q.com`,
-against the staging backend and Clerk's development instance); `main` only
-ever receives `dev`: once in a while, one large `dev` -> `main` PR, merged with
-a merge commit, which deploys prod. Don't open that PR unless asked. PR checks
-(typecheck, tests, a production build) run on PRs into `dev` only.
-
-Secrets come from Infisical at `/main-frontend`: `dev` for local, `staging`
-and `prod` for the two deployments. See `docs/ENVIRONMENT_VARIABLES.md`.
-
-## Commands
-
-```bash
-pnpm run dev          # runs via infisical, port 3000
-pnpm run typecheck
-pnpm test             # Node 24: the .mjs tests import .ts files natively
-```
-
-`next.config.mjs` ignores type and lint errors during the build, so run
-`pnpm run typecheck` yourself; CI does.
+Sign in with the Linear account that is a member of the GDG workspace. No token
+is committed. A `linear` server, if one is loaded, is some other workspace
+configured outside this repo: never read or write GDG tickets through it.
