@@ -1,6 +1,7 @@
 'use server'
 
 import { auth, clerkClient } from '@clerk/nextjs/server'
+import { memberEditableMetadata, withVerifiedUniId } from '@/lib/member-metadata'
 
 export async function updateUserMetadata(metadata: Record<string, unknown>) {
   const { isAuthenticated, userId } = await auth()
@@ -12,8 +13,11 @@ export async function updateUserMetadata(metadata: Record<string, unknown>) {
   const client = await clerkClient()
 
   try {
+    // Only the member's own fields come from the browser; uni_id comes from the
+    // email Clerk verified (lib/member-metadata.ts).
+    const user = await client.users.getUser(userId)
     await client.users.updateUser(userId, {
-      publicMetadata: metadata,
+      publicMetadata: withVerifiedUniId(memberEditableMetadata(metadata), user.primaryEmailAddress?.emailAddress),
     })
 
     return { success: true }
@@ -23,17 +27,15 @@ export async function updateUserMetadata(metadata: Record<string, unknown>) {
   }
 }
 
-// Links a uni_id account's typed personal email to Clerk as a verified
-// secondary email. This is what lets Clerk's native account linking kick in:
-// if the real owner of that email later signs up with Google, Clerk merges
-// them into this account automatically instead of creating a duplicate.
-//
-// `verified: true` is a deliberate trust decision - we're vouching for an
-// unverified, self-typed email with no OTP round-trip. Only ever applied to
-// uni_id/password accounts (never Google accounts, which already own their
-// primary email outright), and always best-effort: failures here must never
-// block onboarding, since this only accelerates a linking optimization -
-// the original manual-merge path still exists if it doesn't happen.
+// Used to add the typed personal email to the Clerk account as already
+// verified, with no code, so a later Google sign-in under that address would
+// be linked into this account. Switched off: it let any account vouch for
+// someone else's address - including <their uni_id>@qu.edu.sa. Made primary
+// (promoteEmailToPrimary), that address became the session token's email
+// claim, which the backend uses to find a member's row, and Clerk would link
+// the real owner's later Google sign-in into the wrong account. Bring it back
+// only behind a real verification code. The original manual-merge path still
+// covers members who end up with two accounts.
 export async function addVerifiedPersonalEmail(personalEmail: string) {
   const { isAuthenticated, userId } = await auth()
 
@@ -41,38 +43,6 @@ export async function addVerifiedPersonalEmail(personalEmail: string) {
     return { error: 'Not authenticated' }
   }
 
-  const client = await clerkClient()
-
-  try {
-    const user = await client.users.getUser(userId)
-    const primaryEmail = user.primaryEmailAddress?.emailAddress
-
-    const isUniIdAccount = !!primaryEmail?.match(/^\d{9}@qu\.edu\.sa$/i)
-    if (!isUniIdAccount) {
-      return { success: true, skipped: 'not-a-uni-id-account' }
-    }
-
-    if (!personalEmail || personalEmail.toLowerCase() === primaryEmail?.toLowerCase()) {
-      return { success: true, skipped: 'no-personal-email' }
-    }
-
-    const alreadyLinked = user.emailAddresses.some(
-      (e) => e.emailAddress.toLowerCase() === personalEmail.toLowerCase()
-    )
-    if (alreadyLinked) {
-      return { success: true, skipped: 'already-linked' }
-    }
-
-    await client.emailAddresses.createEmailAddress({
-      userId,
-      emailAddress: personalEmail,
-      verified: true,
-      primary: false,
-    })
-
-    return { success: true }
-  } catch (err) {
-    console.error('Error linking verified personal email:', err)
-    return { error: 'Failed to link personal email' }
-  }
+  void personalEmail
+  return { success: true, skipped: 'requires-verification-code' }
 }
