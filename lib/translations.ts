@@ -736,6 +736,7 @@ export const resources = {
 
       // Onboarding Submission Errors
       "onboarding.submitError.emailInUse": "This email is already in use by another account. Please use a different email.",
+      "onboarding.submitError.memberExists": "You already have a membership under another account with this phone number. Sign out and sign in with the account you used before, or ask a club admin to move your membership to this account.",
       "onboarding.submitError.generic": "We couldn't finish setting up your account. Please try again.",
 
       // Common
@@ -1468,6 +1469,7 @@ export const resources = {
 
       // Onboarding Submission Errors
       "onboarding.submitError.emailInUse": "هذا البريد الإلكتروني مستخدم في حساب ثاني. جرّب بريد إلكتروني مختلف.",
+      "onboarding.submitError.memberExists": "عندك عضوية مسجّلة برقم الجوال هذا في حساب ثاني. سجّل خروج وادخل بالحساب اللي استخدمته قبل، أو تواصل مع إدارة النادي لنقل عضويتك لهذا الحساب.",
       "onboarding.submitError.generic": "ما قدرنا نكمّل إعداد حسابك. حاول مرة ثانية.",
 
       // Common

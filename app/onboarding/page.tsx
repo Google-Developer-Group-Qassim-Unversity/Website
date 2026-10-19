@@ -98,7 +98,11 @@ function OnboardingContent() {
     const result = await createMember()
 
     if (!result.ok) {
-      if (result.status === 409) {
+      if (result.code === 'member_exists') {
+        // Their phone number is already on a member record that another
+        // sign-in uses: they signed up before with a different account.
+        setError(t('onboarding.submitError.memberExists'))
+      } else if (result.status === 409) {
         setError(t('onboarding.submitError.emailInUse'))
       } else {
         console.warn(`[onboarding] member creation failed, status: ${result.status}`)
