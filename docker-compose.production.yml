@@ -8,8 +8,9 @@
 
 services:
   web:
-    image: gdg-score-web
-    container_name: gdg-score-web
+    # Named per deployment by deploy.yml: gdg-score-web for prod, -staging for staging.
+    image: ${CONTAINER_NAME:-gdg-score-web}
+    container_name: ${CONTAINER_NAME:-gdg-score-web}
     build:
       context: .
       dockerfile: Dockerfile
@@ -26,7 +27,7 @@ services:
       - .env.production
     restart: unless-stopped
     ports:
-      - "127.0.0.1:3010:3000"
+      - "127.0.0.1:${HOST_PORT:-3010}:3000"
 
 secrets:
   sentry_auth_token:

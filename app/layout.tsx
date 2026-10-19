@@ -86,7 +86,7 @@ export default async function RootLayout({
         <Script
           defer
           data-domain="gdg-q.com"
-          src="https://analytics.dragpath.ai/js/script.file-downloads.hash.outbound-links.pageview-props.tagged-events.js"
+          src="https://plausible.albrrak773.com/js/script.file-downloads.hash.outbound-links.pageview-props.tagged-events.js"
           strategy="afterInteractive"
         />
         <Script id="plausible-init" strategy="afterInteractive">

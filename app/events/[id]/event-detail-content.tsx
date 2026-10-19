@@ -20,6 +20,7 @@ import { PageBreadcrumb } from "@/components/page-breadcrumb";
 import { ImageZoom } from "@/components/ui/shadcn-io/image-zoom";
 import { getTranslation } from "@/lib/server-i18n";
 import { EventSignupButton } from "@/components/event-signup-button";
+import { EventContentDialog } from "@/components/event-content-dialog";
 import { isSameDayOrOvernight, getEventDayCount, getEffectiveEndDate, buildGoogleCalendarUrl } from "@/lib/event-utils";
 import type { Language } from "@/lib/translations";
 
@@ -181,6 +182,12 @@ export async function EventDetailContent({ id, lang }: { id: string; lang: Langu
     isSafeHttpUrl(event.meeting_url) &&
     event.status !== "closed";
 
+  // The backend ships published rows only; the safety guard skips anything
+  // unsafe at the last moment, silently.
+  const contentLinks = (event.content_links ?? []).filter(
+    (link) => link.published && isSafeHttpUrl(link.url)
+  );
+
   return (
     <>
       <PageBreadcrumb
@@ -320,6 +327,9 @@ export async function EventDetailContent({ id, lang }: { id: string; lang: Langu
             )}
             {openEvent && (
               <EventSignupButton event={openEvent} className="w-full" />
+            )}
+            {contentLinks.length > 0 && (
+              <EventContentDialog links={contentLinks} lang={lang} className="w-full" />
             )}
 
           {/* Description Section */}

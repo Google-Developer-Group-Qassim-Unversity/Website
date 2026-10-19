@@ -9,11 +9,12 @@ It is one of three repos, meant to be cloned side by side:
 |------|------|
 | [Backend](https://github.com/Google-Developer-Group-Qassim-Unversity/Backend) | The one API every frontend calls (FastAPI, MySQL) |
 | [Admin](https://github.com/Google-Developer-Group-Qassim-Unversity/Admin) | The admin panel, `admin.gdg-q.com` |
-| Website | This repo, `gdg-q.com` |
+| Website | This repo, `gdg-q.com` (staging `dev.gdg-q.com`) |
 
-This repo was `score-leaderboard-app`. A push to `main` deploys production
-(`.github/workflows/deploy.yml`); secrets come from Infisical at `/main-frontend`
-(see `docs/ENVIRONMENT_VARIABLES.md`).
+This repo was `score-leaderboard-app`. Branch from `dev` and open PRs into
+`dev`: a merge there deploys staging, and `main` only receives `dev`, which
+deploys production. See [CLAUDE.md](CLAUDE.md). Secrets come from Infisical at
+`/main-frontend` (see `docs/ENVIRONMENT_VARIABLES.md`).
 
 ```bash
 pnpm install
