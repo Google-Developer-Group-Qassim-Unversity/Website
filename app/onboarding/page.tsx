@@ -114,11 +114,10 @@ function OnboardingContent() {
     // back to its defaults.
     void saveInitialCardProfile(data)
 
-    // Best-effort: link the typed personal email to this Clerk account as a
-    // verified secondary email so a future Google sign-up under that email
-    // auto-links instead of creating a duplicate account. Never blocks
-    // onboarding - addVerifiedPersonalEmail swallows its own errors and is a
-    // no-op for Google sign-ups (googleEmail already proves their ownership).
+    // Best-effort and currently switched off: addVerifiedPersonalEmail used to
+    // add the typed personal email as verified with no code, which let one
+    // account vouch for another person's address (see its comment). It is a
+    // no-op until it can send a real verification code.
     if (!googleEmail) {
       await addVerifiedPersonalEmail(data.personalEmail)
     }
