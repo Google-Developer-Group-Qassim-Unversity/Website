@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react"
 import QRCode from "qrcode"
 import { DEFAULT_THEME_ID, WALLET_THEMES, WalletCardData } from "@/lib/wallet-themes"
+import { cardQrValue } from "@/lib/card-qr"
 
 interface WalletCardProps {
   data: WalletCardData
@@ -45,7 +46,8 @@ export function WalletCard({ data, qrUrl, scale = 1 }: WalletCardProps) {
   const [renderWidth, setRenderWidth] = useState(DISPLAY_WIDTH * scale)
   const theme = WALLET_THEMES[data.themeId] || WALLET_THEMES[DEFAULT_THEME_ID]
   const assets = themeAssets(theme.id)
-  const targetQrUrl = qrUrl || (data.uuid ? `https://gdg-q.com/p/${data.uuid}` : "https://gdg-q.com")
+  // The signed card QR from /wallet/me when the backend sends one, else the unsigned profile link.
+  const targetQrUrl = qrUrl || cardQrValue(data)
 
   useEffect(() => {
     const container = containerRef.current
