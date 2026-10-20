@@ -349,6 +349,15 @@ export const resources = {
       "footer.copyright": "© GDG-Q 2026",
       "footer.privacy": "Privacy Policy",
       "footer.terms": "Terms of Service",
+      "footer.support": "Help & Support",
+
+      // Privacy policy and support pages (their body text is in app/privacy/content.tsx and app/support/content.tsx)
+      "legal.backHome": "Back to home",
+      "privacy.title": "Privacy Policy",
+      "privacy.lastUpdated": "Last updated: October 20, 2026",
+      "privacy.description": "How GDG Qassim collects, uses and protects your data on the website and in the GDG Qassim app.",
+      "support.title": "Help & Support",
+      "support.description": "Contact GDG Qassim, get help with the website and the GDG Qassim app, or delete your account.",
 
       // Feedback
       "feedback.card.title": "Your Feedback Matters",
@@ -1091,6 +1100,15 @@ export const resources = {
       "footer.copyright": "© GDG-Q 2026",
       "footer.privacy": "سياسة الخصوصية",
       "footer.terms": "شروط الخدمة",
+      "footer.support": "المساعدة والدعم",
+
+      // صفحتا سياسة الخصوصية والدعم (نصوصهما في app/privacy/content.tsx وapp/support/content.tsx)
+      "legal.backHome": "العودة للرئيسية",
+      "privacy.title": "سياسة الخصوصية",
+      "privacy.lastUpdated": "آخر تحديث: 20 أكتوبر 2026",
+      "privacy.description": "كيف يجمع نادي GDG القصيم بياناتك ويستخدمها ويحميها في الموقع وفي تطبيق GDG Qassim.",
+      "support.title": "المساعدة والدعم",
+      "support.description": "تواصل مع نادي GDG القصيم، واحصل على المساعدة في الموقع وتطبيق GDG Qassim، أو احذف حسابك.",
 
       // Feedback
       "feedback.card.title": "رأيك يهمنا",
