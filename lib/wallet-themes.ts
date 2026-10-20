@@ -99,6 +99,8 @@ export interface ProfileVisibility {
 
 export interface WalletCardData {
   uuid?: string
+  // The QR the backend signs (`qr_value` from /wallet/me, lib/card-qr.ts); absent from older backends.
+  qrValue?: string
   fullName: string
   nameLanguage?: 'ar' | 'en'
   isAdmin?: boolean

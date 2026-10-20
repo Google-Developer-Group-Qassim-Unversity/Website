@@ -1,6 +1,7 @@
 'use server'
 
 import { auth, clerkClient } from '@clerk/nextjs/server'
+import { memberEditableMetadata, withVerifiedUniId } from '@/lib/member-metadata'
 
 export async function updateClerkMetadata(newMetadata: Record<string, unknown>) {
   const { isAuthenticated, userId } = await auth()
@@ -10,15 +11,20 @@ export async function updateClerkMetadata(newMetadata: Record<string, unknown>) 
   }
 
   const client = await clerkClient()
-  
+
   try {
     const currentUser = await client.users.getUser(userId)
     const existingMetadata = currentUser.publicMetadata || {}
-    
-    const mergedMetadata = {
-      ...existingMetadata,
-      ...newMetadata,
-    }
+
+    // Only the member's own fields come from the browser, and uni_id is
+    // re-derived from the verified email on every write (lib/member-metadata.ts).
+    const mergedMetadata = withVerifiedUniId(
+      {
+        ...existingMetadata,
+        ...memberEditableMetadata(newMetadata),
+      },
+      currentUser.primaryEmailAddress?.emailAddress,
+    )
 
     await client.users.updateUser(userId, {
       publicMetadata: mergedMetadata,
@@ -65,6 +71,18 @@ export async function promoteEmailToPrimary(emailAddressId: string) {
   const client = await clerkClient()
 
   try {
+    // The primary email is the session token's email claim, which the backend
+    // trusts to find a member's row. Only an address a linked Google (OAuth)
+    // account proved may take that place - never one added without a code.
+    const user = await client.users.getUser(userId)
+    const target = user.emailAddresses.find((email) => email.id === emailAddressId)
+    const provenByOAuth =
+      target?.verification?.status === 'verified' &&
+      target.linkedTo.some((link) => link.type.startsWith('oauth_'))
+    if (!provenByOAuth) {
+      return { error: 'Only an email proven by a linked Google account can become primary' }
+    }
+
     await client.users.updateUser(userId, {
       primaryEmailAddressID: emailAddressId,
     })
