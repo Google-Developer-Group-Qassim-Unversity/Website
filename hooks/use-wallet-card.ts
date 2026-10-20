@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react"
 import { useUser, useAuth } from "@clerk/nextjs"
 import { WalletCardData, DEFAULT_THEME_ID } from "@/lib/wallet-themes"
+import { readQrValue } from "@/lib/card-qr"
 
 interface UseWalletCardResult {
   isLoaded: boolean
@@ -59,6 +60,7 @@ export function useWalletCard(): UseWalletCardResult {
 
         setCardData({
           uuid: prof.uuid,
+          qrValue: readQrValue(data.qr_value),
           fullName: prof.custom_name || data.name || user?.fullName || "",
           nameLanguage: "ar",
           isAdmin: Boolean(data.is_admin),
