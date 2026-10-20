@@ -1,6 +1,7 @@
 import Link from "next/link"
 import { Card, CardContent } from "@/components/ui/card"
 import { ArrowLeft, FileText } from "lucide-react"
+import { CLUB_EMAIL, CLUB_EMAIL_HREF } from "@/lib/club-contact"
 
 export const metadata = {
   title: "Terms of Service",
@@ -98,8 +99,8 @@ export default function TermsOfServicePage() {
               <h2 className="text-lg font-semibold text-slate-900 mb-2">Contact</h2>
               <p>
                 Questions about these terms:{" "}
-                <a href="mailto:GDG_QU1@gmail.com" className="text-blue-600 hover:underline">
-                  GDG_QU1@gmail.com
+                <a href={CLUB_EMAIL_HREF} className="text-blue-600 hover:underline">
+                  {CLUB_EMAIL}
                 </a>
               </p>
             </section>
