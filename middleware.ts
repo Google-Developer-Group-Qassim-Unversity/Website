@@ -1,6 +1,12 @@
 import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server'
 import { NextResponse } from 'next/server'
 import { getValidatedRedirectParam } from '@/lib/redirect-config'
+import {
+  LANGUAGE_COOKIE,
+  LANGUAGE_COOKIE_MAX_AGE,
+  languageFromParam,
+  withoutLanguageParam,
+} from '@/lib/language-param'
 
 declare global {
   interface CustomJwtSessionClaims {
@@ -34,7 +40,19 @@ const isSignInFlow = createRouteMatcher([
 // redirects away the other direction, once onboarding is actually complete.
 const isOnboarding = createRouteMatcher(['/onboarding(.*)'])
 
+// The policies and the support page stay readable for a signed-in visitor who has not finished onboarding: the
+// member app links to them from its welcome and settings screens, and the store listings link to them.
+const isPolicyPage = createRouteMatcher(['/privacy', '/terms', '/support'])
+
 export default clerkMiddleware(async (auth, req) => {
+  // `?lang=ar|en` (lib/language-param.ts): remember the language, then load the same page without the parameter.
+  const lang = req.nextUrl.pathname.startsWith('/api') ? null : languageFromParam(req.nextUrl.searchParams)
+  if (lang) {
+    const response = NextResponse.redirect(withoutLanguageParam(req.nextUrl.href))
+    response.cookies.set(LANGUAGE_COOKIE, lang, { path: '/', maxAge: LANGUAGE_COOKIE_MAX_AGE, sameSite: 'lax' })
+    return response
+  }
+
   const { userId, sessionClaims } = await auth()
   const onboarded = !!sessionClaims?.metadata?.onboardingComplete
 
@@ -50,7 +68,7 @@ export default clerkMiddleware(async (auth, req) => {
     return NextResponse.next()
   }
 
-  if (isOnboarding(req)) {
+  if (isOnboarding(req) || isPolicyPage(req)) {
     return NextResponse.next()
   }
 

@@ -4,6 +4,7 @@ import Link from "next/link"
 import Image from "next/image"
 import { useTranslation } from 'react-i18next'
 import '../lib/i18n-client'
+import { CLUB_EMAIL_HREF } from "@/lib/club-contact"
 import {
   Home,
   Users,
@@ -73,7 +74,7 @@ const socialLinks = [
     icon: MessageCircle,
   },
   {
-    href: "mailto:GDG_QU1@gmail.com",
+    href: CLUB_EMAIL_HREF,
     labelKey: "footer.social.email",
     icon: Mail,
   },
@@ -327,13 +328,17 @@ export function Footer() {
         {/* Copyright */}
         <div className="pt-8 border-t">
           <div className="flex flex-col items-center justify-center gap-3 text-center">
-            <div className="flex items-center gap-4 text-sm text-muted-foreground">
+            <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-sm text-muted-foreground">
               <Link href="/privacy" className="hover:text-foreground transition-colors">
                 {t('footer.privacy')}
               </Link>
               <span aria-hidden="true">·</span>
               <Link href="/terms" className="hover:text-foreground transition-colors">
                 {t('footer.terms')}
+              </Link>
+              <span aria-hidden="true">·</span>
+              <Link href="/support" className="hover:text-foreground transition-colors">
+                {t('footer.support')}
               </Link>
             </div>
             <span className="text-sm text-muted-foreground">{t('footer.copyright')}</span>

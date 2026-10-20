@@ -103,6 +103,14 @@ export default function UserProfilePage() {
               elements: {
                 rootBox: "w-full",
                 card: "shadow-sm rounded-2xl border border-border/60",
+                // Sign in with Apple is for the member app only: the website has no Apple web credentials, so
+                // "Connect account" must not offer Apple once production Clerk turns Apple on. The menu items share
+                // one element key (`menuItem__connectedAccounts`); only the provider icon names the provider
+                // (`providerIcon__apple`, from @clerk/ui 1.40). If Clerk renames either, this hides nothing and
+                // breaks nothing. An Apple account a member already linked in the app stays listed.
+                menuItem__connectedAccounts: {
+                  "&:has(.cl-providerIcon__apple)": { display: "none" },
+                },
               }
             }}
           >
