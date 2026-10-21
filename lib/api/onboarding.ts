@@ -27,7 +27,7 @@ export interface MemberPointsResponse {
 
 export type CreateMemberResult =
   | { ok: true; data: CreateMemberResponse }
-  | { ok: false; status: number | null }
+  | { ok: false; status: number | null; code?: string }
 
 // Creates the backend member row for a freshly-onboarded user. If an
 // admin-created record already exists for their (Clerk-verified) email, the
@@ -39,7 +39,7 @@ export async function createMember(): Promise<CreateMemberResult> {
   } catch (err) {
     if (err instanceof ApiError) {
       console.warn(`[createMember] Failed to create member ${err.status}: ${err.message}`)
-      return { ok: false, status: err.status }
+      return { ok: false, status: err.status, code: err.code }
     }
     console.error('[createMember] Failed to create member:', err)
     return { ok: false, status: null }
