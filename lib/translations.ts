@@ -359,6 +359,15 @@ export const resources = {
       "support.title": "Help & Support",
       "support.description": "Contact GDG Qassim, get help with the website and the GDG Qassim app, or delete your account.",
 
+      // The member app's link page, gdg-q.com/app (phones are sent straight to their store)
+      "app.title": "The GDG Qassim app",
+      "app.description": "Get the GDG Qassim member app for iPhone or Android.",
+      "app.lead": "Register for events, check in with a QR code and follow your points, all from your phone. Get the app from your phone's store:",
+      "app.appStore": "Download on the App Store",
+      "app.googlePlay": "Get it on Google Play",
+      "app.scan": "On a computer? Scan this code with your phone's camera to open the right store.",
+      "app.qrAlt": "QR code for gdg-q.com/app",
+
       // Feedback
       "feedback.card.title": "Your Feedback Matters",
 
@@ -1110,6 +1119,15 @@ export const resources = {
       "privacy.description": "كيف يجمع نادي GDG القصيم بياناتك ويستخدمها ويحميها في الموقع وفي تطبيق GDG Qassim.",
       "support.title": "المساعدة والدعم",
       "support.description": "تواصل مع نادي GDG القصيم، واحصل على المساعدة في الموقع وتطبيق GDG Qassim، أو احذف حسابك.",
+
+      // صفحة رابط تطبيق الأعضاء gdg-q.com/app (الجوال يذهب مباشرة إلى متجره)
+      "app.title": "تطبيق GDG Qassim",
+      "app.description": "حمّل تطبيق أعضاء GDG Qassim للآيفون أو أندرويد.",
+      "app.lead": "سجّل في الفعاليات، وسجّل حضورك برمز QR، وتابع نقاطك، كل ذلك من جوالك. حمّل التطبيق من متجر جوالك:",
+      "app.appStore": "حمّله من App Store",
+      "app.googlePlay": "احصل عليه من Google Play",
+      "app.scan": "تستخدم الكمبيوتر؟ امسح هذا الرمز بكاميرا جوالك ليفتح لك المتجر المناسب.",
+      "app.qrAlt": "رمز QR لرابط gdg-q.com/app",
 
       // Feedback
       "feedback.card.title": "رأيك يهمنا",
