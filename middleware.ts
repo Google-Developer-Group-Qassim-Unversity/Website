@@ -44,6 +44,9 @@ const isOnboarding = createRouteMatcher(['/onboarding(.*)'])
 // member app links to them from its welcome and settings screens, and the store listings link to them.
 const isPolicyPage = createRouteMatcher(['/privacy', '/terms', '/support'])
 
+// `/app` sends a phone to the member app's store: anyone who opens the link gets there, onboarded or not.
+const isAppLink = createRouteMatcher(['/app'])
+
 export default clerkMiddleware(async (auth, req) => {
   // `?lang=ar|en` (lib/language-param.ts): remember the language, then load the same page without the parameter.
   const lang = req.nextUrl.pathname.startsWith('/api') ? null : languageFromParam(req.nextUrl.searchParams)
@@ -68,7 +71,7 @@ export default clerkMiddleware(async (auth, req) => {
     return NextResponse.next()
   }
 
-  if (isOnboarding(req) || isPolicyPage(req)) {
+  if (isOnboarding(req) || isPolicyPage(req) || isAppLink(req)) {
     return NextResponse.next()
   }
 
