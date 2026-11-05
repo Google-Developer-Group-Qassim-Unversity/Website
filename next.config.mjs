@@ -3,6 +3,11 @@ import { withSentryConfig } from "@sentry/nextjs"
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   output: 'standalone',
+  webpack(config) {
+    // In Docker, /app/app/page.tsx must not resolve to /app/app/app/page.tsx.
+    config.resolve.preferAbsolute = true
+    return config
+  },
   eslint: {
     ignoreDuringBuilds: true,
   },
