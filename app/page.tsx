@@ -30,9 +30,8 @@ export default async function Dashboard() {
         <div className="absolute bottom-40 left-1/3 w-72 h-72 bg-green-200 rounded-full mix-blend-multiply filter blur-xl animate-pulse delay-2000"></div>
       </div>
       <div className="relative max-w-7xl mx-auto">
-        <AppSection lang={lang} />
-        <div id="website-content" tabIndex={-1} className="scroll-mt-20">
         <HeroSection lang={lang} />
+        <AppSection lang={lang} />
         <WalletSection />
         <HydrationBoundary state={dehydrate(queryClient)}>
           <StatsSection lang={lang} />
@@ -41,7 +40,6 @@ export default async function Dashboard() {
         </HydrationBoundary>
         <MagazinesSection />
         <ClubStructureSection lang={lang} />
-        </div>
       </div>
     </div>
   )

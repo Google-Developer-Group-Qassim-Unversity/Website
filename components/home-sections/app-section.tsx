@@ -1,6 +1,5 @@
 import Image from "next/image"
 import QRCode from "qrcode"
-import { ArrowDown } from "lucide-react"
 import { APP_STORE_URL, GOOGLE_PLAY_URL } from "@/lib/app-stores"
 import { config } from "@/lib/config"
 import { getTranslation } from "@/lib/server-i18n"
@@ -26,10 +25,6 @@ export async function AppSection({ lang }: { lang: Language }) {
               <a href={APP_STORE_URL} className={downloadClass}>{t("app.appStore")}</a>
               <a href={GOOGLE_PLAY_URL} className={downloadClass}>{t("app.googlePlay")}</a>
             </div>
-            <a href="#website-content" className="inline-flex min-h-11 items-center gap-2 rounded-md px-2 font-semibold text-blue-700 underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-blue-600">
-              {t("app.continue")}
-              <ArrowDown aria-hidden="true" className="h-4 w-4" />
-            </a>
           </div>
           <div className="hidden w-48 shrink-0 space-y-3 text-center md:block">
             <img src={`data:image/svg+xml;utf8,${encodeURIComponent(qr)}`} alt={t("app.qrAlt")} width={176} height={176} className="mx-auto rounded-xl bg-white p-2" />

@@ -360,7 +360,6 @@ export const resources = {
       "support.description": "Contact GDG Qassim, get help with the website and the GDG Qassim app, or delete your account.",
 
       // The member app's link page, gdg-q.com/app (phones are sent straight to their store)
-      "app.continue": "Continue to website",
       "app.title": "The GDG Qassim app",
       "app.description": "Get the GDG Qassim member app for iPhone or Android.",
       "app.lead": "Register for events, check in with a QR code and follow your points, all from your phone. Get the app from your phone's store:",
@@ -1122,7 +1121,6 @@ export const resources = {
       "support.description": "تواصل مع نادي GDG القصيم، واحصل على المساعدة في الموقع وتطبيق GDG Qassim، أو احذف حسابك.",
 
       // صفحة رابط تطبيق الأعضاء gdg-q.com/app (الجوال يذهب مباشرة إلى متجره)
-      "app.continue": "تابع إلى الموقع",
       "app.title": "تطبيق GDG Qassim",
       "app.description": "حمّل تطبيق أعضاء GDG Qassim للآيفون أو أندرويد.",
       "app.lead": "سجّل في الفعاليات، وسجّل حضورك برمز QR، وتابع نقاطك، كل ذلك من جوالك. حمّل التطبيق من متجر جوالك:",
