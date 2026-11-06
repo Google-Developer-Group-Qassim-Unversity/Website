@@ -1,3 +1,4 @@
+import { AppSection } from "@/components/home-sections/app-section"
 import { HydrationBoundary, dehydrate } from "@tanstack/react-query"
 import { HeroSection, StatsSection, EventsSection, LeaderboardSection, MagazinesSection, WalletSection, ClubStructureSection } from "@/components/home-sections"
 import { getLanguageFromCookies, isRTL } from "@/lib/server-i18n"
@@ -30,6 +31,7 @@ export default async function Dashboard() {
       </div>
       <div className="relative max-w-7xl mx-auto">
         <HeroSection lang={lang} />
+        <AppSection lang={lang} />
         <WalletSection />
         <HydrationBoundary state={dehydrate(queryClient)}>
           <StatsSection lang={lang} />
