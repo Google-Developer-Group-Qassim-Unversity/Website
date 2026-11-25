@@ -41,14 +41,14 @@ export function fetchMembers(semester?: number): Promise<ApiMembersPointsRespons
   const params = new URLSearchParams()
   if (semester != null) params.set('semester', String(semester))
   const qs = params.toString()
-  return publicServerApi.get<ApiMembersPointsResponse>(`/points/members/total${qs ? `?${qs}` : ''}`, { tags: ['members'] })
+  return publicServerApi.get<ApiMembersPointsResponse>(`/points/members/total${qs ? `?${qs}` : ''}`, { revalidate: false })
 }
 
 export function fetchMemberById(id: string, semester?: number): Promise<ApiMemberPointsHistory> {
   const params = new URLSearchParams()
   if (semester != null) params.set('semester', String(semester))
   const qs = params.toString()
-  return publicServerApi.get<ApiMemberPointsHistory>(`/points/members/${id}${qs ? `?${qs}` : ''}`, { tags: ['members', `member-${id}`] })
+  return publicServerApi.get<ApiMemberPointsHistory>(`/points/members/${id}${qs ? `?${qs}` : ''}`, { revalidate: false })
 }
 
 export function fetchCurrentMember(): Promise<CurrentMember> {
@@ -67,7 +67,7 @@ export function fetchDepartments(semester?: number): Promise<ApiDepartmentsPoint
   const params = new URLSearchParams()
   if (semester != null) params.set('semester', String(semester))
   const qs = params.toString()
-  return publicServerApi.get<ApiDepartmentsPointsResponse>(`/points/departments/total${qs ? `?${qs}` : ''}`, { tags: ['departments'] })
+  return publicServerApi.get<ApiDepartmentsPointsResponse>(`/points/departments/total${qs ? `?${qs}` : ''}`, { revalidate: false })
     .then(filterDepartmentPoints)
 }
 
@@ -75,7 +75,7 @@ export function fetchDepartmentById(id: string, semester?: number): Promise<ApiD
   const params = new URLSearchParams()
   if (semester != null) params.set('semester', String(semester))
   const qs = params.toString()
-  return publicServerApi.get<ApiDepartmentPointsHistory>(`/points/departments/${id}${qs ? `?${qs}` : ''}`, { tags: ['departments', `department-${id}`] })
+  return publicServerApi.get<ApiDepartmentPointsHistory>(`/points/departments/${id}${qs ? `?${qs}` : ''}`, { revalidate: false })
 }
 
 /** The roster for a semester (Hijri code, e.g. 472); the current semester when omitted. */

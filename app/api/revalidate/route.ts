@@ -25,8 +25,7 @@ export async function POST(req: Request) {
   }
 
   try {
-    // Tags are applied in lib/api/api.ts. Callers may target a single resource
-    // (?tag=members) to avoid flushing everything; with no tag, flush all.
+    // Callers may target one tag (for example, ?tag=events) or invalidate the default set.
     const requested = new URL(req.url).searchParams.get("tag");
     const tags = requested ? [requested] : ["members", "departments", "events", "semesters"];
 

@@ -3,6 +3,9 @@ import { config } from "@/lib/config"
 import { fetchEvents, fetchMembers, fetchDepartments } from "@/lib/api/api"
 import { getAllMagazines } from "@/lib/magazines"
 
+// Generate on request because the member and department reads bypass the cache.
+export const revalidate = 0
+
 const baseUrl = config.thisAppUrl
 
 const staticRoutes: MetadataRoute.Sitemap = [
