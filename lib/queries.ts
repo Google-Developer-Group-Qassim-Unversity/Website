@@ -35,7 +35,7 @@ export const membersQuery = (semester?: number) =>
     queryKey: ['members', { semester: semester ?? null }] as const,
     queryFn: () =>
       api.get<ApiMembersPointsResponse>(withSemester('/points/members/total', semester), {
-        revalidate: false,
+        tags: ['members'],
       }),
   })
 
@@ -44,7 +44,7 @@ export const memberQuery = (id: string, semester?: number) =>
     queryKey: ['members', id, { semester: semester ?? null }] as const,
     queryFn: () =>
       api.get<ApiMemberPointsHistory>(withSemester(`/points/members/${id}`, semester), {
-        revalidate: false,
+        tags: ['members', `member-${id}`],
       }),
   })
 
@@ -55,7 +55,7 @@ export const departmentsQuery = (semester?: number) =>
       api
         .get<ApiDepartmentsPointsResponse>(
           withSemester('/points/departments/total', semester),
-          { revalidate: false }
+          { tags: ['departments'] }
         )
         .then(filterDepartmentPoints),
   })
@@ -66,7 +66,7 @@ export const departmentQuery = (id: string, semester?: number) =>
     queryFn: () =>
       api.get<ApiDepartmentPointsHistory>(
         withSemester(`/points/departments/${id}`, semester),
-        { revalidate: false }
+        { tags: ['departments', `department-${id}`] }
       ),
   })
 

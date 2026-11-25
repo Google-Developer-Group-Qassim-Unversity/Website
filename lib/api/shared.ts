@@ -16,8 +16,10 @@ export type RequestOptions = {
 }
 
 /**
- * Public reads use this server cache lifetime by default. Points reads opt out
- * so the next page request sees changes as soon as the API returns them.
+ * Shared, public data (leaderboards, events) is cached server-side for this
+ * long. Short enough that a hard load is never meaningfully stale, long enough
+ * that repeat renders don't re-hit the backend. Client-side freshness is a
+ * separate layer — see lib/query-client.ts.
  */
 const DEFAULT_REVALIDATE = 30
 

@@ -25,14 +25,22 @@ export async function POST(req: Request) {
   }
 
   try {
-    // Callers may target one tag (for example, ?tag=events) or invalidate the default set.
     const requested = new URL(req.url).searchParams.get("tag");
-    const tags = requested ? [requested] : ["members", "departments", "events", "semesters"];
+    const pointsTags = ["members", "departments"];
+    let tags = [...pointsTags, "events", "semesters"];
+    if (requested === "points") {
+      tags = pointsTags;
+    } else if (requested) {
+      tags = [requested];
+    }
 
     for (const tag of tags) {
       revalidateTag(tag);
     }
-    revalidatePath("/", "layout");
+    // Attendance changes only affect the tagged member and department reads.
+    if (requested !== "points") {
+      revalidatePath("/", "layout");
+    }
 
     return NextResponse.json({ ok: true, revalidated: tags, at: Date.now() });
   } catch (error) {
