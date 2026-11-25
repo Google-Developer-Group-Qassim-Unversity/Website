@@ -27,10 +27,11 @@ import { NewBadge } from "@/components/new-badge"
 import { Sheet, SheetContent, SheetTrigger, SheetClose } from "@/components/ui/sheet"
 import { AuthButton, AuthButtonMobile } from "@/components/auth-button"
 
+// Fetch points pages on click so their payload reflects the latest totals.
 const navItems = [
-  { href: "/", labelKey: "nav.home", icon: Home },
-  { href: "/members", labelKey: "nav.members", icon: Users },
-  { href: "/departments", labelKey: "nav.departments", icon: Building2 },
+  { href: "/", prefetch: false, labelKey: "nav.home", icon: Home },
+  { href: "/members", prefetch: false, labelKey: "nav.members", icon: Users },
+  { href: "/departments", prefetch: false, labelKey: "nav.departments", icon: Building2 },
   { href: "/events", labelKey: "nav.events", icon: CalendarDays },
   { href: "/wallet", labelKey: "nav.wallet", icon: Wallet, isNew: true },
   { href: "/magazines", labelKey: "nav.magazines", icon: BookOpen },
@@ -38,14 +39,14 @@ const navItems = [
   { href: "/how", labelKey: "nav.howItWorks", icon: BadgeHelp },
 ]
 
-function NavLink({ href, labelKey, icon: Icon, isActive, isNew }: { href: string; labelKey: string; icon: LucideIcon; isActive: boolean; isNew?: boolean }) {
+function NavLink({ href, labelKey, icon: Icon, isActive, isNew, prefetch = true }: { href: string; labelKey: string; icon: LucideIcon; isActive: boolean; isNew?: boolean; prefetch?: boolean }) {
   const { t, i18n } = useTranslation();
   const isRTL = i18n.language === 'ar';
 
   return (
     <Link
       href={href}
-      prefetch
+      prefetch={prefetch}
       className={cn(
         "flex items-center gap-1.5 px-2 lg:px-3 py-2 rounded-md font-semibold transition-colors",
         isRTL && "flex-row-reverse",
@@ -59,14 +60,14 @@ function NavLink({ href, labelKey, icon: Icon, isActive, isNew }: { href: string
   )
 }
 
-function MobileNavLink({ href, labelKey, icon: Icon, isActive, isNew, onClick }: { href: string; labelKey: string; icon: LucideIcon; isActive: boolean; isNew?: boolean; onClick: () => void }) {
+function MobileNavLink({ href, labelKey, icon: Icon, isActive, isNew, prefetch = true, onClick }: { href: string; labelKey: string; icon: LucideIcon; isActive: boolean; isNew?: boolean; prefetch?: boolean; onClick: () => void }) {
   const { t } = useTranslation();
 
   return (
     <Link
       href={href}
       onClick={onClick}
-      prefetch
+      prefetch={prefetch}
       className={cn(
         "flex items-center gap-3 px-3 py-3 rounded-md font-semibold transition-colors text-base",
         isActive ? "bg-foreground text-background" : "text-foreground/70 hover:text-foreground hover:bg-accent"

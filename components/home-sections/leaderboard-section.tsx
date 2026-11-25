@@ -45,7 +45,7 @@ export function LeaderboardSection({ lang }: { lang: Language }) {
                     <span className="break-words leading-tight">{t('leaderboard.topMembers')}</span>
                   </CardTitle>
                   <div className="flex items-center gap-2 shrink-0">
-                    <Link href="/members" prefetch>
+                    <Link href="/members" prefetch={false}>
                       <Button variant="outline" size="default" className="bg-white/80 hover:bg-white border-slate-300 text-slate-700 font-medium shadow-sm hover:shadow-md transition-shadow duration-200 text-xs sm:text-sm px-2 sm:px-3 shrink-0 cursor-pointer">
                         {t('leaderboard.viewAll')}
                         <MoveRight className="h-3 w-3 sm:h-4 sm:w-4 ms-1.5 rtl:rotate-180" />
@@ -82,7 +82,7 @@ export function LeaderboardSection({ lang }: { lang: Language }) {
                     <span className="wrap-break-word leading-tight">{t('leaderboard.topDepartments')}</span>
                   </CardTitle>
                   <div className="flex items-center gap-2 shrink-0">
-                    <Link href="/departments" prefetch>
+                    <Link href="/departments" prefetch={false}>
                       <Button variant="outline" size="sm" className="bg-white/80 hover:bg-white border-slate-300 text-slate-700 font-medium shadow-sm hover:shadow-md transition-shadow duration-200 text-xs sm:text-sm px-2 sm:px-3 shrink-0 cursor-pointer">
                         {t('leaderboard.viewAll')}
                         <MoveRight className="h-3 w-3 sm:h-4 sm:w-4 ms-1.5 rtl:rotate-180" />

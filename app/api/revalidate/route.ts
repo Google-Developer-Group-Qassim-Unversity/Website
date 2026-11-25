@@ -25,15 +25,22 @@ export async function POST(req: Request) {
   }
 
   try {
-    // Tags are applied in lib/api/api.ts. Callers may target a single resource
-    // (?tag=members) to avoid flushing everything; with no tag, flush all.
     const requested = new URL(req.url).searchParams.get("tag");
-    const tags = requested ? [requested] : ["members", "departments", "events", "semesters"];
+    const pointsTags = ["members", "departments"];
+    let tags = [...pointsTags, "events", "semesters"];
+    if (requested === "points") {
+      tags = pointsTags;
+    } else if (requested) {
+      tags = [requested];
+    }
 
     for (const tag of tags) {
       revalidateTag(tag);
     }
-    revalidatePath("/", "layout");
+    // Attendance changes only affect the tagged member and department reads.
+    if (requested !== "points") {
+      revalidatePath("/", "layout");
+    }
 
     return NextResponse.json({ ok: true, revalidated: tags, at: Date.now() });
   } catch (error) {
