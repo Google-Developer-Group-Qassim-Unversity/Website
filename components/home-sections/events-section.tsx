@@ -7,7 +7,7 @@ import { Calendar, MoveRight } from "lucide-react"
 import { EventCard } from "@/components/event-card"
 import { HomeSectionHeader } from "@/components/home-sections/home-section-header"
 import { useOpenEvents } from "@/hooks/queries/use-events"
-import { isEventPast } from "@/lib/event-utils"
+import { isUpcomingOrLivePublicEvent } from "@/lib/event-utils"
 import { getTranslation } from "@/lib/i18n"
 import type { Language } from "@/lib/translations"
 
@@ -16,7 +16,9 @@ export function EventsSection({ lang }: { lang: Language }) {
 
   const { data: openEvents = [], isError } = useOpenEvents()
 
-  const events = openEvents.filter((event) => !isEventPast(event)).slice(0, 6)
+  const events = openEvents
+    .filter((event) => isUpcomingOrLivePublicEvent(event))
+    .slice(0, 6)
 
   return (
     <section className="container mx-auto px-4 py-12">

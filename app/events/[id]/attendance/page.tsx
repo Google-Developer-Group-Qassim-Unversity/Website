@@ -39,6 +39,7 @@ const ERROR_MESSAGE_KEYS: Record<string, string> = {
   token_bad_algorithm: "attendance.tokenProblem",
   token_missing_claim: "attendance.tokenProblem",
   token_invalid: "attendance.tokenProblem",
+  event_not_published: "attendance.eventNotPublished",
 }
 
 function AttendanceContent() {

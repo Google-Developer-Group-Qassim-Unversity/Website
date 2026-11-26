@@ -1,7 +1,139 @@
-import { addDays, differenceInDays, differenceInHours, format, isSameDay as dateFnsIsSameDay } from "date-fns"
+import { addDays, differenceInHours, format, isSameDay as dateFnsIsSameDay } from "date-fns"
+import type {
+  ApiEventItem,
+  EffectiveRegistrationStatus,
+  EventPhase,
+} from "./api/types"
+import type { Language } from "./translations"
 
-export function isEventPast(event: { end_datetime: string }, now: number = Date.now()): boolean {
+// 'none' and 'hidden' are internal-only events that should never surface publicly.
+export function isPublicEventLocation(locationType: string): boolean {
+  return locationType !== "none" && locationType !== "hidden"
+}
+
+export function getEventPhase(
+  event: { phase?: EventPhase | null; start_datetime: string; end_datetime: string },
+  now: number = Date.now(),
+): EventPhase {
+  if (event.phase === "upcoming" || event.phase === "live" || event.phase === "ended") {
+    return event.phase
+  }
+  const start = new Date(event.start_datetime).getTime()
+  const end = new Date(event.end_datetime).getTime()
+  if (now < start) return "upcoming"
+  if (now <= end) return "live"
+  return "ended"
+}
+
+export function isEventPast(
+  event: { phase?: EventPhase | null; end_datetime: string },
+  now: number = Date.now(),
+): boolean {
+  if (event.phase === "ended") return true
+  if (event.phase === "upcoming" || event.phase === "live") return false
   return new Date(event.end_datetime).getTime() < now
+}
+
+export function getEffectiveRegistrationStatus(
+  event: Pick<
+    ApiEventItem,
+    | "status"
+    | "phase"
+    | "end_datetime"
+    | "form_type"
+    | "registration_status"
+    | "effective_registration_status"
+    | "is_registration_open"
+  >,
+  now: number = Date.now(),
+): EffectiveRegistrationStatus {
+  if (event.effective_registration_status) {
+    return event.effective_registration_status
+  }
+  if (!event.form_type || event.form_type === "none") {
+    return "none"
+  }
+  if (event.is_registration_open === true) {
+    return "open"
+  }
+  if (event.status === "cancelled") {
+    return "closed"
+  }
+  if (event.status === "draft") {
+    return "not_open"
+  }
+  if (isEventPast(event, now) || event.registration_status === "closed") {
+    return "closed"
+  }
+  if (!event.registration_status || event.registration_status === "not_open") {
+    return "not_open"
+  }
+  return "open"
+}
+
+export function isRegistrationOpen(
+  event: Pick<
+    ApiEventItem,
+    | "status"
+    | "phase"
+    | "end_datetime"
+    | "form_type"
+    | "registration_status"
+    | "effective_registration_status"
+    | "is_registration_open"
+  >,
+  now: number = Date.now(),
+): boolean {
+  if (typeof event.is_registration_open === "boolean") {
+    return event.is_registration_open
+  }
+  return getEffectiveRegistrationStatus(event, now) === "open"
+}
+
+export function isUpcomingOrLivePublicEvent(
+  event: Pick<ApiEventItem, "status" | "location_type" | "phase" | "end_datetime">,
+  now: number = Date.now(),
+): boolean {
+  return (
+    event.status === "published" &&
+    isPublicEventLocation(event.location_type) &&
+    !isEventPast(event, now)
+  )
+}
+
+export function isPastPublicEvent(
+  event: Pick<ApiEventItem, "status" | "location_type" | "phase" | "end_datetime">,
+  now: number = Date.now(),
+): boolean {
+  return (
+    event.status === "published" &&
+    isPublicEventLocation(event.location_type) &&
+    isEventPast(event, now)
+  )
+}
+
+export function formatEventDateTimeShort(dateString: string | null | undefined, lang: Language): string | null {
+  if (!dateString) return null
+  const date = new Date(dateString)
+  if (Number.isNaN(date.getTime())) return null
+
+  const locale = lang === "ar" ? "ar-SA" : "en-US"
+  const datePart = date.toLocaleDateString(locale, {
+    month: "short",
+    day: "numeric",
+    numberingSystem: "latn",
+  })
+  let timePart = date.toLocaleTimeString(locale, {
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true,
+    numberingSystem: "latn",
+  })
+  if (lang === "ar") {
+    timePart = timePart.replace(/AM/gi, "صباحاً").replace(/PM/gi, "مساءً")
+    return `${datePart}، ${timePart}`
+  }
+  return `${datePart}, ${timePart}`
 }
 
 export function isOvernightEvent(start: Date | undefined, end: Date | undefined): boolean {

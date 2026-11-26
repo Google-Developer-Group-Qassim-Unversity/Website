@@ -1,11 +1,13 @@
 import { notFound } from "next/navigation";
 import Image from "next/image";
-import { fetchEvents, fetchOpenEvents } from "@/lib/api/api";
+import { fetchEvents } from "@/lib/api/api";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import {
+  AlertTriangle,
   Calendar,
   CalendarPlus,
   Clock,
@@ -14,31 +16,27 @@ import {
   Info,
   Video,
 } from "lucide-react";
-import type { ApiEventItem, ApiOpenEventItem } from "@/lib/api/types";
+import type { ApiEventItem } from "@/lib/api/types";
 import { cn } from "@/lib/utils";
 import { PageBreadcrumb } from "@/components/page-breadcrumb";
 import { ImageZoom } from "@/components/ui/shadcn-io/image-zoom";
 import { getTranslation } from "@/lib/server-i18n";
 import { EventSignupButton } from "@/components/event-signup-button";
+import { AcceptedMeetingLinkButton } from "@/components/accepted-meeting-link-button";
 import { EventContentDialog } from "@/components/event-content-dialog";
-import { isSameDayOrOvernight, getEventDayCount, getEffectiveEndDate, buildGoogleCalendarUrl } from "@/lib/event-utils";
+import {
+  isSameDayOrOvernight,
+  getEventDayCount,
+  getEffectiveEndDate,
+  buildGoogleCalendarUrl,
+  getEventPhase,
+  getEffectiveRegistrationStatus,
+  isPublicEventLocation,
+} from "@/lib/event-utils";
 import type { Language } from "@/lib/translations";
 
-// Valid statuses for display (excludes draft)
-const VALID_STATUSES: ApiEventItem["status"][] = ["open", "active", "closed"];
-
-const getStatusVariant = (status: ApiEventItem["status"]) => {
-  switch (status) {
-    case "open":
-      return "outline" as const;
-    case "active":
-      return "outline" as const;
-    case "closed":
-      return "outline" as const;
-    default:
-      return "outline" as const;
-  }
-};
+// Draft events stay hidden (404); cancelled events are accessible directly with a clear notice.
+const VISIBLE_STATUSES: ApiEventItem["status"][] = ["published", "cancelled"];
 
 function isSafeHttpUrl(url: string): boolean {
   return /^https?:\/\//i.test(url);
@@ -76,24 +74,18 @@ function linkify(text: string) {
 export async function EventDetailContent({ id, lang }: { id: string; lang: Language }) {
   const t = (key: string) => getTranslation(lang, key);
 
-  // Fetch both regular events and open events (for signup button)
-  const [events, openEvents] = await Promise.all([
-    fetchEvents(),
-    fetchOpenEvents(),
-  ]);
-
-  // Filter to only valid statuses (open, active, closed)
-  const validEvents = events.filter((e) => VALID_STATUSES.includes(e.status));
-  const event = validEvents.find((e) => e.id === parseInt(id));
+  const events = await fetchEvents();
+  const visibleEvents = events.filter((e) => VISIBLE_STATUSES.includes(e.status));
+  const event = visibleEvents.find((e) => e.id === parseInt(id, 10));
 
   if (!event) {
     notFound();
   }
 
-  // Check if this event has an open registration form
-  const openEvent = openEvents.find(
-    (e) => e.id === event.id
-  ) as ApiOpenEventItem | undefined;
+  const isCancelled = event.status === "cancelled";
+  const isPublished = event.status === "published";
+  const phase = getEventPhase(event);
+  const effectiveReg = getEffectiveRegistrationStatus(event);
 
   // Image URL is now returned as full URL from the API
   const imageUrl = event.image_url;
@@ -143,24 +135,6 @@ export async function EventDetailContent({ id, lang }: { id: string; lang: Langu
   const dailyStartTime = formatTime(event.start_datetime);
   const dailyEndTime = formatTime(event.end_datetime);
 
-  // Get translated status label
-  const getStatusLabel = () => {
-    switch (event.status) {
-      case "open":
-        // Check if form_type is 'none' for events without registration
-        if (openEvent?.form_type === 'none') {
-          return t("eventDetail.status.openToJoin");
-        }
-        return t("eventDetail.status.open");
-      case "active":
-        return t("eventDetail.status.active");
-      case "closed":
-        return t("eventDetail.status.closed");
-      default:
-        return event.status;
-    }
-  };
-
   // Get translated location type label
   const getLocationTypeLabel = () => {
     switch (event.location_type) {
@@ -169,24 +143,121 @@ export async function EventDetailContent({ id, lang }: { id: string; lang: Langu
       case "on-site":
         return t("eventDetail.locationType.onsite");
       case "none":
+      case "hidden":
         return t("eventDetail.locationType.none");
       default:
         return event.location_type;
     }
   };
 
+  const renderStatusBadges = () => {
+    if (isCancelled) {
+      return (
+        <Badge variant="destructive" className="text-sm px-3 py-1">
+          {t("eventDetail.status.cancelled")}
+        </Badge>
+      );
+    }
+
+    const phaseBadge =
+      phase === "live" ? (
+        <Badge
+          variant="outline"
+          className="text-sm px-3 py-1 border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300"
+        >
+          <span className="size-2 rounded-full bg-emerald-500 animate-pulse" />
+          {t("eventDetail.status.live")}
+        </Badge>
+      ) : phase === "upcoming" ? (
+        <Badge
+          variant="outline"
+          className="text-sm px-3 py-1 border-blue-200 bg-blue-50 text-blue-700 dark:border-blue-800 dark:bg-blue-950/60 dark:text-blue-300"
+        >
+          {t("eventDetail.status.upcoming")}
+        </Badge>
+      ) : (
+        <Badge variant="secondary" className="text-sm px-3 py-1">
+          {t("eventDetail.status.ended")}
+        </Badge>
+      );
+
+    if (phase === "ended") {
+      return phaseBadge;
+    }
+
+    let regBadge: React.ReactNode = null;
+    if (effectiveReg === "open") {
+      regBadge = (
+        <Badge
+          variant="outline"
+          className="text-sm px-3 py-1 border-green-200 bg-green-50 text-green-700 dark:border-green-800 dark:bg-green-950/60 dark:text-green-300"
+        >
+          {t("eventDetail.status.open")}
+        </Badge>
+      );
+    } else if (effectiveReg === "not_open") {
+      regBadge = (
+        <Badge
+          variant="outline"
+          className="text-sm px-3 py-1 border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-800 dark:bg-amber-950/60 dark:text-amber-300"
+        >
+          {t("eventDetail.status.opensSoon")}
+        </Badge>
+      );
+    } else if (effectiveReg === "closed") {
+      regBadge = (
+        <Badge variant="secondary" className="text-sm px-3 py-1">
+          {t("eventDetail.status.registrationClosed")}
+        </Badge>
+      );
+    } else if (event.form_type === "none") {
+      regBadge = (
+        <Badge
+          variant="outline"
+          className="text-sm px-3 py-1 border-sky-200 bg-sky-50 text-sky-700 dark:border-sky-800 dark:bg-sky-950/60 dark:text-sky-300"
+        >
+          {t("eventDetail.status.openToJoin")}
+        </Badge>
+      );
+    }
+
+    return (
+      <>
+        {phaseBadge}
+        {regBadge}
+      </>
+    );
+  };
+
   // No registration required for this event: safe to offer adding it to Google Calendar
-  const showAddToCalendar = openEvent?.form_type === "none";
+  const showAddToCalendar =
+    isPublished && phase !== "ended" && event.form_type === "none";
   const showMeetingLink =
+    isPublished &&
+    phase !== "ended" &&
     !!event.meeting_url &&
-    isSafeHttpUrl(event.meeting_url) &&
-    event.status !== "closed";
+    isSafeHttpUrl(event.meeting_url);
+  const showAcceptedMeetingLink =
+    isPublished &&
+    phase !== "ended" &&
+    !showMeetingLink &&
+    event.location_type === "online" &&
+    event.meeting_url_visibility === "accepted" &&
+    event.form_id != null;
+  const showSignup =
+    isPublished &&
+    phase !== "ended" &&
+    event.form_id != null &&
+    event.form_type != null &&
+    event.form_type !== "none";
 
   // The backend ships published rows only; the safety guard skips anything
   // unsafe at the last moment, silently.
-  const contentLinks = (event.content_links ?? []).filter(
-    (link) => link.published && isSafeHttpUrl(link.url)
-  );
+  const contentLinks = isCancelled
+    ? []
+    : (event.content_links ?? []).filter(
+        (link) => link.published && isSafeHttpUrl(link.url)
+      );
 
   return (
     <>
@@ -230,15 +301,20 @@ export async function EventDetailContent({ id, lang }: { id: string; lang: Langu
             {event.name}
           </h1>
 
-          {/* Badges and Signup Button */}
-          <div className="flex flex-wrap items-center gap-3">
-            <Badge
-              variant={getStatusVariant(event.status)}
-              className="text-sm px-3 py-1"
-            >
-              {getStatusLabel()}
-            </Badge>
+          {/* Badges */}
+          <div className="flex flex-wrap items-center gap-2">
+            {renderStatusBadges()}
           </div>
+
+          {isCancelled && (
+            <Alert variant="destructive" dir={lang === "ar" ? "rtl" : "ltr"}>
+              <AlertTriangle className="h-4 w-4" />
+              <AlertTitle>{t("eventDetail.cancelledNoticeTitle")}</AlertTitle>
+              <AlertDescription>
+                {t("eventDetail.cancelledNoticeDescription")}
+              </AlertDescription>
+            </Alert>
+          )}
 
           {/* Date & Time */}
           <div className="space-y-3">
@@ -279,7 +355,7 @@ export async function EventDetailContent({ id, lang }: { id: string; lang: Langu
           </div>
 
           {/* Location */}
-          {event.location_type !== "none" && (
+          {isPublicEventLocation(event.location_type) && (
             <div className="flex items-start gap-2 text-muted-foreground">
               <LocationIcon className="h-5 w-5 text-primary shrink-0 mt-0.5" />
               <div>
@@ -290,47 +366,55 @@ export async function EventDetailContent({ id, lang }: { id: string; lang: Langu
           )}
 
           <Separator />
-            {(showMeetingLink || showAddToCalendar) && (
-              <div className="flex flex-col sm:flex-row gap-2">
-                {showMeetingLink && (
-                  <Button
-                    asChild
-                    size="lg"
-                    className={cn("w-full", showAddToCalendar && "sm:flex-1")}
+          {(showMeetingLink || showAddToCalendar) && (
+            <div className="flex flex-col sm:flex-row gap-2">
+              {showMeetingLink && (
+                <Button
+                  asChild
+                  size="lg"
+                  className={cn("w-full", showAddToCalendar && "sm:flex-1")}
+                >
+                  <a href={event.meeting_url!} target="_blank" rel="noopener noreferrer nofollow">
+                    <Video className="h-5 w-5" />
+                    {phase === "live"
+                      ? t("eventDetail.joinMeeting")
+                      : t("eventDetail.meetingLink")}
+                  </a>
+                </Button>
+              )}
+              {showAddToCalendar && (
+                <Button
+                  asChild
+                  variant="secondary"
+                  size="lg"
+                  className={cn("w-full", showMeetingLink && "sm:w-auto sm:shrink-0")}
+                >
+                  <a
+                    href={buildGoogleCalendarUrl(event)}
+                    target="_blank"
+                    rel="noopener noreferrer nofollow"
                   >
-                    <a href={event.meeting_url!} target="_blank" rel="noopener noreferrer nofollow">
-                      <Video className="h-5 w-5" />
-                      {event.status === "active"
-                        ? t("eventDetail.joinMeeting")
-                        : t("eventDetail.meetingLink")}
-                    </a>
-                  </Button>
-                )}
-                {showAddToCalendar && (
-                  <Button
-                    asChild
-                    variant="secondary"
-                    size="lg"
-                    className={cn("w-full", showMeetingLink && "sm:w-auto sm:shrink-0")}
-                  >
-                    <a
-                      href={buildGoogleCalendarUrl(event)}
-                      target="_blank"
-                      rel="noopener noreferrer nofollow"
-                    >
-                      <CalendarPlus className="h-5 w-5" />
-                      {t("eventDetail.addToCalendar")}
-                    </a>
-                  </Button>
-                )}
-              </div>
-            )}
-            {openEvent && (
-              <EventSignupButton event={openEvent} className="w-full" />
-            )}
-            {contentLinks.length > 0 && (
-              <EventContentDialog links={contentLinks} lang={lang} className="w-full" />
-            )}
+                    <CalendarPlus className="h-5 w-5" />
+                    {t("eventDetail.addToCalendar")}
+                  </a>
+                </Button>
+              )}
+            </div>
+          )}
+          {showAcceptedMeetingLink && (
+            <AcceptedMeetingLinkButton
+              formId={event.form_id!}
+              phase={phase}
+              joinLabel={t("eventDetail.joinMeeting")}
+              linkLabel={t("eventDetail.meetingLink")}
+            />
+          )}
+          {showSignup && (
+            <EventSignupButton event={event} className="w-full" />
+          )}
+          {contentLinks.length > 0 && (
+            <EventContentDialog links={contentLinks} lang={lang} className="w-full" />
+          )}
 
           {/* Description Section */}
           <Card>

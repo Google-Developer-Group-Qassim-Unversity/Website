@@ -15,9 +15,9 @@ export async function generateMetadata({
   try {
     const { id } = await params;
     const events = await fetchEvents();
-    const event = events.find((e) => e.id === parseInt(id));
+    const event = events.find((e) => e.id === parseInt(id, 10));
 
-    if (!event) {
+    if (!event || event.status === "draft") {
       return { title: "Event" };
     }
 

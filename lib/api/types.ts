@@ -130,7 +130,19 @@ export type ApiDepartmentDetail = ApiDepartmentPointsHistory
 
 // ===== Events Types =====
 
-export type EventStatus = "draft" | "open" | "active" | "closed"
+export type EventStatus = "draft" | "published" | "cancelled"
+
+/** Derived server-side from Riyadh wall-clock time. */
+export type EventPhase = "upcoming" | "live" | "ended"
+
+export type RegistrationStatus = "not_open" | "open" | "closed"
+
+/** Derived server-side from event status, phase, and form registration settings/window. */
+export type EffectiveRegistrationStatus = "none" | "not_open" | "open" | "closed"
+
+export type EventFormType = "none" | "registration" | "google"
+
+export type MeetingUrlVisibility = "public" | "accepted" | "hidden"
 
 /** How much prior knowledge an event assumes. */
 export type EventLevel = "beginner" | "intermediate" | "advanced"
@@ -139,24 +151,48 @@ export interface ApiEventItem {
   id: number
   name: string
   description: string | null
-  location_type: "online" | "on-site" | "none"
+  location_type: "online" | "on-site" | "none" | "hidden"
   location: string
   start_datetime: string
   end_datetime: string
   status: EventStatus
   level: EventLevel
   image_url: string | null
-  /** Join link for remote events, set by an admin. Null when there is none. */
+  /** Join link for remote events, set by an admin. Null when hidden/restricted or unset. */
   meeting_url: string | null
+  meeting_url_visibility?: MeetingUrlVisibility
   created_at: string | null
+  published_at?: string | null
+  cancelled_at?: string | null
+  phase?: EventPhase | null
   /** Published content links, attached server-side. Unpublished rows never arrive. */
   content_links?: ApiEventContentLink[]
+  form_id?: number | null
+  form_type?: EventFormType | null
+  registration_status?: RegistrationStatus | null
+  effective_registration_status?: EffectiveRegistrationStatus
+  is_registration_open?: boolean
+  google_responders_url?: string | null
 }
 
 export interface ApiOpenEventItem extends ApiEventItem {
-  form_type: 'none' | 'registration' | 'google'
+  form_type: EventFormType
   form_id: number
   google_responders_url: string | null
+  registration_status?: RegistrationStatus | null
+  effective_registration_status: EffectiveRegistrationStatus
+  is_registration_open: boolean
+}
+
+export interface ApiMySubmissionItem {
+  submission_id: number
+  form_id: number
+  event_id: number
+  submission_type: "none" | "partial" | "google" | "registration"
+  submitted_at: string
+  is_accepted: boolean
+  is_invited: boolean
+  meeting_url?: string | null
 }
 
 export type ApiEventsResponse = ApiEventItem[]
@@ -185,6 +221,8 @@ export type SubmissionType = 'none' | 'partial'
 export interface ApiSubmissionResponse {
   submission_status: SubmissionStatus
   submission_timestamp?: string
+  is_accepted?: boolean
+  meeting_url?: string | null
 }
 
 // ===== Semesters Types =====

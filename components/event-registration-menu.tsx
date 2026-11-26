@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react"
 import { useRouter } from "next/navigation"
+import { useQueryClient } from "@tanstack/react-query"
 import { toast } from "sonner"
 import { Loader2, XCircle } from "lucide-react"
 import {
@@ -24,7 +25,6 @@ import { buttonVariants } from "@/components/ui/button"
 import { useCancelSignup } from "@/hooks/mutations/use-cancel-signup"
 import { cn } from "@/lib/utils"
 import { ApiError } from "@/lib/api/errors"
-import type { ApiOpenEventItem } from "@/lib/api/types"
 import { useTranslation } from "react-i18next"
 import "@/lib/i18n-client"
 
@@ -36,12 +36,17 @@ import "@/lib/i18n-client"
 export const DOTS_ANIMATION_MS = 200
 
 interface EventRegistrationMenuProps {
-  event: ApiOpenEventItem
+  event: {
+    id: number
+    name: string
+    form_id: number
+  }
 }
 
 export function EventRegistrationMenu({ event }: EventRegistrationMenuProps) {
   const { t, i18n } = useTranslation()
   const router = useRouter()
+  const queryClient = useQueryClient()
   const cancelMutation = useCancelSignup()
 
   const [menuOpen, setMenuOpen] = useState(false)
@@ -80,6 +85,11 @@ export function EventRegistrationMenu({ event }: EventRegistrationMenuProps) {
       toast.success(`${t("eventSignup.cancelSuccessToast")} ${event.name}`)
       router.refresh()
     } catch (err) {
+      if (err instanceof ApiError && err.code === "registration_closed") {
+        setConfirmOpen(false)
+        queryClient.invalidateQueries({ queryKey: ["events"] })
+        router.refresh()
+      }
       toast.error(cancelErrorMessage(err))
     }
   }
