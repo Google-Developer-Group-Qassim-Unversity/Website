@@ -3,6 +3,7 @@
 import { useState } from "react"
 import { useUser } from "@clerk/nextjs"
 import { useRouter } from "next/navigation"
+import { useQueryClient } from "@tanstack/react-query"
 import { Button } from "@/components/ui/button"
 import { useSubmissionStatus } from "@/hooks/queries/use-submission-status"
 import { useEventSignup } from "@/hooks/mutations/use-event-signup"
@@ -19,36 +20,55 @@ import {
 } from "@/components/ui/alert-dialog"
 import { AuthRequiredDialog } from "@/components/auth-required-dialog"
 import { EventRegistrationMenu } from "@/components/event-registration-menu"
-import { Loader2, CheckCircle2, FileText } from "lucide-react"
-import type { ApiOpenEventItem } from "@/lib/api/types"
+import { Loader2, CheckCircle2, FileText, Clock, Lock } from "lucide-react"
+import { ApiError } from "@/lib/api/errors"
+import {
+  getEffectiveRegistrationStatus,
+  isRegistrationOpen,
+} from "@/lib/event-utils"
+import type { ApiEventItem, ApiOpenEventItem } from "@/lib/api/types"
 import { useTranslation } from 'react-i18next'
 import '@/lib/i18n-client'
 
 interface EventSignupButtonProps {
-  event: ApiOpenEventItem
+  event: ApiEventItem | ApiOpenEventItem
   className?: string
 }
 
 const PARTIAL_DELAY_MS = 1 * 60 * 1000
 
-export function EventSignupButton({ event, className }: EventSignupButtonProps) {
-  if (event.form_type === 'none') {
-    return null
-  }
-
+export function EventSignupButton({
+  event,
+  className,
+}: EventSignupButtonProps) {
   const { isSignedIn, isLoaded } = useUser()
   const router = useRouter()
+  const queryClient = useQueryClient()
   const { t } = useTranslation()
   const [isOpen, setIsOpen] = useState(false)
   const [showAuthDialog, setShowAuthDialog] = useState(false)
 
-  const { 
-    data: submissionData, 
+  const formId = event.form_id ?? null
+  const hasRegistrationForm =
+    event.status === "published" &&
+    formId !== null &&
+    event.form_type != null &&
+    event.form_type !== "none"
+
+  const {
+    data: submissionData,
     isLoading: isCheckingStatus,
     error: statusError,
-  } = useSubmissionStatus(event.form_id)
+  } = useSubmissionStatus(hasRegistrationForm ? formId : null)
 
   const signupMutation = useEventSignup()
+
+  if (!hasRegistrationForm || formId === null) {
+    return null
+  }
+
+  const effectiveRegStatus = getEffectiveRegistrationStatus(event)
+  const registrationOpen = isRegistrationOpen(event)
 
   const getSubmissionStatus = () => {
     if (!submissionData) return false
@@ -66,29 +86,44 @@ export function EventSignupButton({ event, className }: EventSignupButtonProps) 
   const submissionStatus = getSubmissionStatus()
   const statusCheckError = !!statusError
 
+  const isCompleted = submissionStatus === true
+  const isPartial = submissionStatus === 'partial'
+  const isClosedForUnregistered = !registrationOpen && !isCompleted && !isPartial
+
   const handleButtonClick = () => {
+    if (!registrationOpen) {
+      return
+    }
+
     if (!isSignedIn) {
       setShowAuthDialog(true)
       return
     }
-    
+
     if (submissionStatus === 'partial' && event.google_responders_url) {
       router.push(`/events/${event.id}/form?formUrl=${encodeURIComponent(event.google_responders_url)}`)
       return
     }
-    
+
     setIsOpen(true)
+  }
+
+  const signupErrorMessage = (err: unknown) => {
+    if (err instanceof ApiError && err.code === "registration_closed") {
+      return t("eventSignup.registrationClosedSignup")
+    }
+    return err instanceof Error ? err.message : t("eventSignup.somethingWentWrong")
   }
 
   const handleSignup = async () => {
     const submissionType = event.form_type === 'google' ? 'partial' : 'none'
-    
+
     try {
-      await signupMutation.mutateAsync({ 
-        formId: event.form_id, 
-        submissionType 
+      await signupMutation.mutateAsync({
+        formId,
+        submissionType,
       })
-      
+
       setIsOpen(false)
 
       if (event.form_type === "google" && event.google_responders_url) {
@@ -98,13 +133,28 @@ export function EventSignupButton({ event, className }: EventSignupButtonProps) 
         router.refresh()
       }
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "An error occurred")
+      if (err instanceof ApiError && err.code === "registration_closed") {
+        setIsOpen(false)
+        queryClient.invalidateQueries({ queryKey: ["events"] })
+        router.refresh()
+      }
+      toast.error(signupErrorMessage(err))
     }
   }
 
-  const isCompleted = submissionStatus === true
-  const isPartial = submissionStatus === 'partial'
-  const isDisabled = !isLoaded || isCheckingStatus || isCompleted || statusCheckError
+  const isDisabled =
+    !isLoaded ||
+    isCheckingStatus ||
+    isCompleted ||
+    statusCheckError ||
+    !registrationOpen
+
+  const getButtonVariant = () => {
+    if (isClosedForUnregistered) {
+      return "secondary" as const
+    }
+    return "default" as const
+  }
 
   const getButtonContent = () => {
     if (statusCheckError) {
@@ -113,7 +163,7 @@ export function EventSignupButton({ event, className }: EventSignupButtonProps) 
     if (isCompleted) {
       return (
         <>
-          <CheckCircle2 className="mr-2 h-4 w-4" />
+          <CheckCircle2 className="h-4 w-4 shrink-0" />
           {t('eventSignup.signedUp')}
         </>
       )
@@ -121,8 +171,24 @@ export function EventSignupButton({ event, className }: EventSignupButtonProps) 
     if (isPartial) {
       return (
         <>
-          <FileText className="mr-2 h-4 w-4" />
+          <FileText className="h-4 w-4 shrink-0" />
           {t('eventSignup.fillGoogleForm')}
+        </>
+      )
+    }
+    if (!registrationOpen) {
+      if (effectiveRegStatus === "not_open") {
+        return (
+          <>
+            <Clock className="h-4 w-4 shrink-0" />
+            {t('eventSignup.opensSoon')}
+          </>
+        )
+      }
+      return (
+        <>
+          <Lock className="h-4 w-4 shrink-0" />
+          {t('eventSignup.registrationClosedLabel')}
         </>
       )
     }
@@ -134,7 +200,7 @@ export function EventSignupButton({ event, className }: EventSignupButtonProps) 
       return "bg-orange-500 text-white cursor-not-allowed hover:bg-red-500"
     }
     if (isCompleted) {
-      return "bg-green-500 text-white hover:bg-green-500"
+      return "bg-green-500 text-white hover:bg-green-500 disabled:opacity-90"
     }
     if (isPartial) {
       return "bg-amber-400 text-black hover:bg-amber-400"
@@ -150,19 +216,31 @@ export function EventSignupButton({ event, className }: EventSignupButtonProps) 
         title={t('eventSignup.signInRequired')}
         description={t('eventSignup.signInDescription')}
       />
-      
+
       <AlertDialog open={isOpen} onOpenChange={setIsOpen}>
-        <div className={`flex items-center gap-2 ${className ?? ""}`}>
-          <Button
-            className={`flex-1 ${getButtonClassName()}`}
-            onClick={handleButtonClick}
-            disabled={isDisabled}
-          >
-            {getButtonContent()}
-          </Button>
-          {(isCompleted || isPartial) && <EventRegistrationMenu event={event} />}
+        <div className={`flex flex-col gap-1.5 ${className ?? ""}`}>
+          <div className="flex items-center gap-2">
+            <Button
+              variant={getButtonVariant()}
+              className={`flex-1 ${getButtonClassName()}`}
+              onClick={handleButtonClick}
+              disabled={isDisabled}
+            >
+              {getButtonContent()}
+            </Button>
+            {registrationOpen && (isCompleted || isPartial) && (
+              <EventRegistrationMenu
+                event={{ id: event.id, name: event.name, form_id: formId }}
+              />
+            )}
+          </div>
+          {!registrationOpen && !isCompleted && isPartial && effectiveRegStatus === "closed" && (
+            <p className="text-xs text-muted-foreground text-center" dir="auto">
+              {t('eventSignup.registrationClosedSignup')}
+            </p>
+          )}
         </div>
-        <AlertDialogContent >
+        <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>{t('eventSignup.confirmTitle')}</AlertDialogTitle>
             <AlertDialogDescription>
@@ -171,7 +249,7 @@ export function EventSignupButton({ event, className }: EventSignupButtonProps) 
           </AlertDialogHeader>
           {signupMutation.error && (
             <div className="text-sm text-red-500 bg-red-50 dark:bg-red-950 p-3 rounded-md">
-              {signupMutation.error instanceof Error ? signupMutation.error.message : "An error occurred"}
+              {signupErrorMessage(signupMutation.error)}
             </div>
           )}
           <AlertDialogFooter className="gap-2">

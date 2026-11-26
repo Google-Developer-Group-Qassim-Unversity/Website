@@ -1,6 +1,7 @@
 import type { MetadataRoute } from "next"
 import { config } from "@/lib/config"
 import { fetchEvents, fetchMembers, fetchDepartments } from "@/lib/api/api"
+import { isPublicEventLocation } from "@/lib/event-utils"
 import { getAllMagazines } from "@/lib/magazines"
 
 const baseUrl = config.thisAppUrl
@@ -29,7 +30,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const eventRoutes: MetadataRoute.Sitemap =
     eventsResult.status === "fulfilled"
       ? eventsResult.value
-          .filter((e) => e.status !== "draft" && e.location_type !== "none")
+          .filter((e) => e.status === "published" && isPublicEventLocation(e.location_type))
           .map((e) => ({
             url: `${baseUrl}/events/${e.id}`,
             lastModified: e.created_at ?? undefined,
