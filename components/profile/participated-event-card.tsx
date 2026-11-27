@@ -1,5 +1,6 @@
 "use client"
 
+import Link from 'next/link'
 import { CalendarDays, Sparkle } from 'lucide-react'
 import type { ApiMemberBonus, ApiMyEventItem } from '@/lib/api/types'
 
@@ -21,6 +22,21 @@ export function ParticipatedEventCard({ event, bonus, locale }: ParticipatedEven
   const title = bonus ? bonus.title : (event?.name ?? '')
   const dateStr = bonus ? bonus.given_at : (event?.start_datetime ?? '')
   const points = bonus ? bonus.points : null
+
+  if (!bonus && event) {
+    return (
+      <Link
+        href={`/events/${event.id}`}
+        className="flex items-center justify-between gap-3 rounded-lg border px-4 py-3 transition-colors hover:bg-accent"
+      >
+        <span className="font-medium text-sm truncate">{event.name}</span>
+        <span className="flex items-center gap-1.5 text-xs text-muted-foreground whitespace-nowrap">
+          <CalendarDays className="h-3.5 w-3.5" />
+          {formatEventDate(event.start_datetime, locale)}
+        </span>
+      </Link>
+    )
+  }
 
   return (
     <div className="flex items-center justify-between gap-3 rounded-lg border px-4 py-3">

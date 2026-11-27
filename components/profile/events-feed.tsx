@@ -23,7 +23,7 @@ export function EventsFeed() {
 
   const attended = data?.attended ?? []
   const bonuses = data?.bonuses ?? []
-  const participated = data?.participated ?? []
+  const participated = data?.bonuses === undefined ? data?.participated ?? [] : []
   const hasContributions = bonuses.length > 0 || participated.length > 0
 
   return (
