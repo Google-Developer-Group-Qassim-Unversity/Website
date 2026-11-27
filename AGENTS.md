@@ -1,7 +1,8 @@
-# AGENTS.md
+# Website
 
-The guidance for working in this repo is in [CLAUDE.md](CLAUDE.md); read it
-first. It applies to every agent, not just Claude Code.
+The public site for GDG Qassim (`gdg-q.com`). It is one of three repos
+(`Backend`, `Admin`, `Website`); `Backend/AGENTS.md` describes how they fit
+together.
 
 ## Linear: use `linear-gdg`, never `linear`
 
