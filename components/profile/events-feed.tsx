@@ -22,7 +22,9 @@ export function EventsFeed() {
   }
 
   const attended = data?.attended ?? []
-  const participated = data?.participated ?? []
+  const bonuses = data?.bonuses ?? []
+  const participated = data?.bonuses === undefined ? data?.participated ?? [] : []
+  const hasContributions = bonuses.length > 0 || participated.length > 0
 
   return (
     <div className="space-y-8">
@@ -70,13 +72,16 @@ export function EventsFeed() {
               <Skeleton key={i} className="h-12 w-full rounded-lg" />
             ))}
           </div>
-        ) : participated.length === 0 ? (
+        ) : !hasContributions ? (
           <div className="rounded-lg border border-dashed p-8 text-center">
             <Users className="h-10 w-10 mx-auto text-muted-foreground/50" />
             <p className="mt-2 text-sm text-muted-foreground">{t('profile.noParticipated')}</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+            {bonuses.map((bonus) => (
+              <ParticipatedEventCard key={bonus.bonus_id} bonus={bonus} locale={locale} />
+            ))}
             {participated.map((event) => (
               <ParticipatedEventCard key={event.id} event={event} locale={locale} />
             ))}

@@ -55,7 +55,22 @@ export interface PublicClubStructure {
 }
 
 
-// Event Model (for points history)
+// Unified points history item (events + public bonuses)
+export interface ApiPointsHistoryItem {
+  kind: 'event' | 'bonus'
+  id: string
+  title: string
+  label_en: string | null
+  label_ar: string | null
+  points: number
+  occurred_at: string
+  end_datetime: string | null
+  event_id: number | null
+  bonus_id: string | null
+  location_type: 'online' | 'on-site' | null
+}
+
+// Event Model (deprecated compat list for points history)
 export interface ApiPointsEvent {
   event_name: string
   event_id: number
@@ -73,12 +88,14 @@ export interface ApiPointsEvent {
 // Member Event History Response
 export interface ApiMemberPointsHistory {
   member: ApiMemberPoints
+  history?: ApiPointsHistoryItem[]
   events: ApiPointsEvent[]
 }
 
 // Department Event History Response
 export interface ApiDepartmentPointsHistory {
   department: ApiDepartmentPoints
+  history?: ApiPointsHistoryItem[]
   events: ApiPointsEvent[]
 }
 
@@ -277,7 +294,18 @@ export interface ApiMyEventItem extends ApiEventItem {
   attendance_dates: AttendanceDate[]
 }
 
+export interface ApiMemberBonus {
+  bonus_id: string
+  title: string
+  given_at: string
+  semester_id: string
+  points: number
+  label_en: string | null
+  label_ar: string | null
+}
+
 export interface ApiMyEventsResponse {
   attended: ApiMyEventItem[]
   participated: ApiMyEventItem[]
+  bonuses?: ApiMemberBonus[]
 }
