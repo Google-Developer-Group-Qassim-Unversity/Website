@@ -13,7 +13,7 @@ It is one of three repos, meant to be cloned side by side:
 
 This repo was `score-leaderboard-app`. Branch from `dev` and open PRs into
 `dev`: a merge there deploys staging, and `main` only receives `dev`, which
-deploys production. See [CLAUDE.md](CLAUDE.md). Secrets come from Infisical at
+deploys production. See [AGENTS.md](AGENTS.md). Secrets come from Infisical at
 `/main-frontend` (see `docs/ENVIRONMENT_VARIABLES.md`).
 
 ```bash
